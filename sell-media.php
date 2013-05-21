@@ -31,6 +31,10 @@ if ( is_admin() ) {
     include( dirname(__FILE__) . '/inc/admin-mime-types.php' );
     include( dirname(__FILE__) . '/inc/admin-payments.php' );
     include( dirname(__FILE__) . '/inc/admin-settings.php' );
+
+    include( dirname(__FILE__).'/gpp-theme-options-master/options.php');
+    include( dirname(__FILE__).'/gpp-theme-options-master/plugin-options.php');
+
 }
 
 
@@ -582,3 +586,12 @@ class SellMedia {
 load_plugin_textdomain( 'sell-media', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
 
 $a = new SellMedia();
+
+
+add_action( 'admin_menu', 'my_settings' );
+function my_settings(){
+    add_submenu_page( 'edit.php?post_type=sell_media_item', __('Options', 'sell_media'), __('Options', 'sell_media'),  'manage_options', 'sell_media_admin_options_page' );
+}
+function sell_media_admin_options_page(){
+    print 'hee';
+}
