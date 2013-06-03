@@ -4,14 +4,14 @@
 Plugin Name: Sell Media
 Plugin URI: http://graphpaperpress.com/plugins/sell-media
 Description: A plugin for selling digital downloads and reprints.
-Version: 1.4.4
+Version: 1.4.9
 Author: Graph Paper Press
 Author URI: http://graphpaperpress.com
 Author Email: support@graphpaperpress.com
 License: GPL
 */
 
-define( 'SELL_MEDIA_VERSION', '1.4.4' );
+define( 'SELL_MEDIA_VERSION', '1.4.9' );
 define( 'SELL_MEDIA_PLUGIN_FILE', plugin_dir_path(__FILE__) . 'sell-media.php' );
 
 include( dirname(__FILE__) . '/inc/cart.php' );
@@ -75,7 +75,7 @@ class SellMedia {
         add_action( 'init', array( &$this, 'init' ) );
         add_action( 'admin_init', array( &$this, 'initAdmin' ) );
         add_action( 'admin_menu', array( &$this, 'adminMenus' ) );
-
+        add_action( 'pre_get_posts', array( &$this, 'collection_password_check' ) );
     }
 
 
@@ -205,7 +205,7 @@ class SellMedia {
 
         $permission = 'manage_options';
 
-        add_submenu_page( 'edit.php?post_type=sell_media_item', __('Add Bulk', 'sell_media'), __('Add Bulk', 'sell_media'),  $permission, 'sell_media_add_bulk', 'sell_media_add_bulk_callback_fn' );
+        add_submenu_page( 'edit.php?post_type=sell_media_item', __('Add Bulk', 'sell_media'), __('Add Bulk', 'sell_media'),  'upload_files', 'sell_media_add_bulk', 'sell_media_add_bulk_callback_fn' );
         add_submenu_page( 'edit.php?post_type=sell_media_item', __('Payments', 'sell_media'), __('Payments', 'sell_media'),  $permission, 'sell_media_payments', 'sell_media_payments_callback_fn' );
         add_submenu_page( 'edit.php?post_type=sell_media_item', __('Reports', 'sell_media'), __('Reports', 'sell_media'),  $permission, 'sell_media_reports', 'sell_media_reports_callback_fn' );
         add_submenu_page( 'edit.php?post_type=sell_media_item', __('Extensions', 'sell_media'), __('Extensions', 'sell_media'),  $permission, 'sell_media_extensions', 'sell_media_extensions_callback_fn' );
@@ -440,7 +440,7 @@ class SellMedia {
             'show_ui' => true,
             'show_tagcloud' => true,
             'hierarchical' => true,
-            'rewrite' => true,
+            'rewrite' => array('hierarchical' => true ),
             'query_var' => true
         );
 
@@ -579,6 +579,141 @@ class SellMedia {
         }
         if ( sell_media_is_reports_page() )
             wp_enqueue_script( 'google_charts', 'https://www.google.com/jsapi', array( 'jquery' ) );
+    }
+
+
+    public function collection_password_check( $query ){
+
+        if ( is_admin() ) return $query;
+
+        if ( ! empty( $_GET['s'] ) ) return;
+
+        /**
+         * Check if "collections" is present in query vars
+         */
+        if ( ! empty( $query->query_vars['collection'] ) ){
+            $term_obj = get_term_by( 'slug', $query->query_vars['collection'], 'collection' );
+            $term_id = $term_obj->term_id;
+            $message = __( 'This collection is password protected','sell_media');
+        }
+
+
+        /**
+         * Check if this is a single sell_media_item page
+         * note is_singular('sell_media_item') does not work here
+         */
+        else if ( is_single() && ! empty( $query->query['post_type'] )
+            && $query->query['post_type'] == 'sell_media_item'
+            && ! empty( $query->query['sell_media_item'] ) ){
+            global $wpdb;
+
+            /**
+             * build an array of terms that are password protected
+             */
+            foreach( get_terms('collection') as $term_obj ){
+                $password = sell_media_get_term_meta( $term_obj->term_id, 'collection_password', true );
+                if ( $password ) $term_ids[] = $term_obj->term_id;
+            }
+
+
+            /**
+             * Apparently none of our globals are set and the post_id is not in $query
+             * so we run this query to get our post_id
+             */
+            $post_id = $wpdb->get_var("SELECT ID FROM {$wpdb->prefix}posts WHERE `post_name` LIKE '{$query->query['sell_media_item']}' AND post_type LIKE 'sell_media_item';");
+
+
+            /**
+             * Determine if this post has the given term and the term has a password
+             * if it does we set our term_id to the password protected term
+             */
+            if ( ! empty( $term_ids ) ){
+                foreach( $term_ids as $t ){
+                    if ( has_term( $t, 'collection', $post_id ) && sell_media_get_term_meta( $t, 'collection_password', true ) ){
+                        $term_id = $t;
+                        $message = __( 'This item is password protected', 'sell_media' );
+                    }
+                }
+            }
+        }
+
+
+        /**
+         * Filter out posts that are in password protected collections from our archive pages
+         * We need to check additional post_type since this will pass as true for nav_menu_item
+         */
+        else if ( is_post_type_archive('sell_media_item')
+            && $query->query['post_type'] == 'sell_media_item'
+            || is_home()
+            || is_tax()
+            || is_page()
+            || is_single()
+            ){
+
+            /**
+             * build an array of terms that are password protected
+             */
+            foreach( get_terms('collection') as $term_obj ){
+                $password = sell_media_get_term_meta( $term_obj->term_id, 'collection_password', true );
+                if ( $password ) $term_ids[] = $term_obj->term_id;
+            }
+
+            if ( ! empty( $term_ids ) ){
+                $query->set( 'tax_query', array(
+                        array(
+                            'taxonomy' => 'collection',
+                            'field' => 'id',
+                            'terms' => $term_ids,
+                            'operator' => 'NOT IN'
+                            )
+                        )
+                );
+            }
+        }
+
+
+        /**
+         * Just set our term_id and message to null.
+         */
+        else {
+            $term_id = $message = null;
+        }
+
+        /**
+         * If we have a term ID check if this term is password protected
+         */
+        if ( ! empty( $term_id ) ) {
+
+            /**
+             * get the password for the collection
+             */
+            $password = sell_media_get_term_meta( $term_id, 'collection_password', true );
+
+            if ( ! isset( $_SESSION ) ) session_start();
+
+            if ( ! empty( $password ) ) {
+                if ( ! empty( $_POST['collection_password'] ) && $_POST['collection_password'] == $password
+                    || ! empty( $_SESSION['sell_media']['collection_password'] )
+                    || ! empty( $_SESSION['sell_media']['collection_password'] )
+                    && $_SESSION['sell_media']['collection_password'] == $password ) {
+
+                    if ( empty( $_SESSION['sell_media']['collection_password'] ) )
+                        $_SESSION['sell_media']['collection_password'] = $_POST['collection_password'];
+
+                    return $query;
+                } else { ?>
+                     <form action="" method="POST">
+                         <p><?php print $message; ?>.
+                         <input type="text" value="" name="collection_password" />
+                         <input type="submit" value="<?php _e( 'Submit', 'sell_media' ); ?>" name="submit" />
+                         </p>
+                    </form>
+                <?php } ?>
+                <?php wp_die();
+            }
+        } else {
+            return $query;
+        }
     }
 
 } // end class
