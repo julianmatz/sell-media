@@ -4,10 +4,6 @@ global $sell_media_options;
 
 $sell_media_options = array();
 
-/**
-* GPP Theme Options Version
-*/
-define( 'sell_media_OPTIONS_VER', '1.3' );
 
 /**
 * Set some default theme options when theme is switched to this theme
@@ -64,15 +60,6 @@ function sell_media_get_theme_options_directory_uri() {
 
 }
 
-/**
-* Perform basic setup, registration, and init actions for a theme
-*/
-function sell_media_after_setup_theme() {
-
-    include_once( 'library/theme-customizer.php' );
-
-}
-add_action( 'after_setup_theme', 'sell_media_after_setup_theme', 10 );
 
 /**
 * Enqueue CSS and Javascripts
@@ -84,8 +71,6 @@ function sell_media_enqueue_scripts_styles() {
     wp_enqueue_script( 'wp-color-picker' );
     wp_enqueue_style( 'wp-color-picker' );
     wp_enqueue_media(); // for WordPress 3.5 Media Pop up
-	wp_enqueue_script( 'thickbox' ); // for Font select Pop up
-	wp_enqueue_style( 'thickbox' ); // for Font select Pop up
 
 }
 add_action( 'admin_print_scripts-appearance_page_gpp-settings', 'sell_media_enqueue_scripts_styles', 40 );
@@ -113,39 +98,17 @@ add_action( 'init', 'sell_media_register_actions' );
 /**
 * Fonts need to be included outside of action
 */
-include_once( 'library/fonts.php' );
 include_once( 'library/helpers.php' );
-/**
- * Setup the Theme Admin Settings Page
- */
-function sell_media_add_theme_page() {
-    // Globalize Theme options page
-    global $sell_media_settings_page;
-    // Add Theme options page
-    $sell_media_settings_page = add_theme_page(
-        // $page_title
-        // Name displayed in HTML title tag
-        __( 'Theme Options', 'gpp' ),
-        // $menu_title
-        // Name displayed in the Admin Menu
-        __( 'Theme Options', 'gpp' ),
-        // $capability
-        // User capability required to access page
-        sell_media_get_settings_page_cap(),
-        // $menu_slug
-        // String to append to URL after "themes.php"
-        'gpp-settings',
-        // $callback
-        // Function to define settings page markup
-        'sell_media_admin_options_page'
-    );
+
+add_action( 'admin_menu', 'menu_item', 15, 99 );
+function menu_item(){
+    add_submenu_page( 'edit.php?post_type=sell_media_item', __('Settings New', 'sell_media'), __('Settings New', 'sell_media'),  'manage_options', 'sell_media_settings_key', 'sell_media_admin_options_page_another' );
 }
-// add_action( 'admin_menu', 'sell_media_add_theme_page' );
 
 /**
  * Settings Page Markup
  */
-function sell_media_admin_options_page() {
+function sell_media_admin_options_page_another() {
     global $sell_media_tabs;
     // Determine the current page tab
     $currenttab = sell_media_get_current_tab();
@@ -607,77 +570,6 @@ function sell_media_image_url_callback() {
 
 add_action( 'wp_ajax_sell_media_imageurl', 'sell_media_image_url_callback' );
 
-/**
- * Custom Font Previews
- */
-function sell_media_fonts_preview() {
-
-	// Flag to determine if this is for the header or body copy.
-	$font_flag = $_GET['font'];
-
-	$fonts = sell_media_font_array();
-	$protocol = is_ssl() ? 'https' : 'http';
-
-	$count = count( $fonts );
-	$i = 0;
-	$final_fonts = null;
-
-	foreach( $fonts as $font => $attributes ) {
-	    $i++;
-
-	    if ( $count != $i ){
-	        $sep = '|';
-	    } else {
-	        $sep = null;
-	    }
-	    $clean_font = str_replace(' ', '+', $font );
-	    if ( ! empty( $attributes['parameter'] ) ) {
-	    	$attr_sep = ':';
-	    } else {
-	    	$attr_sep = '';
-	    }
-
-	    $final_fonts .= "{$clean_font}{$attr_sep}{$attributes['parameter']}{$sep}";
-	}
-
-	// wp_enqueue_style( 'reportage-google-fonts', "$protocol://fonts.googleapis.com/css?family={$final_fonts}" );
-	print "<link href='$protocol://fonts.googleapis.com/css?family={$final_fonts}' rel='stylesheet' type='text/css'>";
-
-	$lorum = 'Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Aenean eu leo quam. Pellentesque ornare sem lacinia quam venenatis vestibulum. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.';
-	$html = null;
-
-	foreach ( $fonts as $font => $attributes ) {
-		$class = strtolower( str_replace( ' ' , '-', $font ) );
-		$html .= '<div class="box">';
-		$html .= '<h2 class="' . $class . '">' . $font . '</h2>';
-		$html .= '<p class="' . $class . '">' . $lorum . '</p>';
-		$html .= '<button class="button" data-font-' . $font_flag . '="' . $font . ':' . $attributes['parameter'] . '">Use this font</button>';
-		$html .= '</div>';
-	}
-
-	print '<div id="gpp-font-preview">' . $html . '</div>';
-	die();
-}
-
-add_action( 'wp_ajax_fonts', 'sell_media_fonts_preview' );
-
-/**
- * Theme Name, Theme Version, Readme, Support utility links on theme options
- */
-function sell_media_utility_links(){
-
-    $theme_data = wp_get_theme();
-
-    echo '<div class="theme-options">';
-    echo '<ul>';
-    echo '<li><a href="' . $theme_data->get( 'ThemeURI' ) . '" target="_blank">' . $theme_data->Name . '</a></li>';
-    echo '<li>' . __( 'Version: ', 'gpp' ) . $theme_data->Version . '</li>';
-    echo '<li><a href="' . $theme_data->get( 'AuthorURI' ) . '" target="_blank">' . __( 'Support', 'gpp' ) . '</a></li>';
-    echo '<li><a href="http://graphpaperpress.com/support/theme-instructions/?theme=' . strtolower( str_replace( " ", "-", $theme_data->Name ) ) . '" title="' . __( 'Theme Instructions', 'gpp' ) . '" target="_blank">' . __( 'Instructions', 'gpp' ) . '</a></li>';
-    echo '</ul>';
-    echo '<br class="clear">';
-    echo '</div>';
-}
 
 /**
 * Add custom url field to media uploader

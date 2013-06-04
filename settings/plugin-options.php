@@ -74,30 +74,6 @@ $options = array(
         "type" => "image",
         "default" => ""
     ),
-    'font' => array(
-        "tab" => "general_tab",
-        "name" => "font",
-        "title" => __( "Headline Font", "gpp" ),
-        "description" => __( '<a href="' . get_option('siteurl') . '/wp-admin/admin-ajax.php?action=fonts&font=header&height=600&width=640" class="thickbox">Preview and choose a font</a>', "gpp" ),
-        "section" => "general_section_1",
-        "since" => "1.0",
-        "id" => "general_section_1",
-        "type" => "select",
-        "default" => "Allan:400,700",
-        "valid_options" => sell_media_font_array()
-    ),
-    'font_alt' => array(
-        "tab" => "general_tab",
-        "name" => "font_alt",
-        "title" => __( "Body Font", "gpp" ),
-        "description" => __( '<a href="' . get_option('siteurl') . '/wp-admin/admin-ajax.php?action=fonts&font=body&height=600&width=640" class="thickbox">Preview and choose a font</a>', "gpp" ),
-        "section" => "general_section_1",
-        "since" => "1.0",
-        "id" => "general_section_1",
-        "type" => "select",
-        "default" => "Allan:400,700",
-        "valid_options" => sell_media_font_array()
-    ),
 	'categories' => array(
         "tab" => "general_tab",
         "name" => "categories",

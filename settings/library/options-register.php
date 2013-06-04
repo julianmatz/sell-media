@@ -278,6 +278,10 @@ foreach ( $sell_media_option_parameters as $option ) {
 function sell_media_setting_callback( $option ) {
 	$sell_media_options = (array) sell_media_get_options();
 
+echo '<pre>';
+print_r($sell_media_options);
+echo '</pre>';
+return;
 	$sell_media_option_parameters = sell_media_get_sell_media_option_parameters();
 	$optionname = $option['name'];
 	$optiontitle = $option['title'];

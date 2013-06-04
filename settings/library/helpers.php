@@ -65,21 +65,11 @@ function sell_media_get_page_tab_markup() {
 
 	global $sell_media_tabs;
 
-	$page = 'gpp-settings';
-
-	if ( isset( $_GET['page'] ) && 'gpp-reference' == $_GET['page'] ) {
-		$page = 'gpp-reference';
-	} else {
-		// do nothing
-	}
+	$page = 'sell_media_settings_key';
 
     $current = sell_media_get_current_tab();
 
-	if ( 'gpp-settings' == $page ) {
-        $tabs = $sell_media_tabs;
-	} else if ( 'gpp-reference' == $page ) {
-        $tabs = sell_media_get_reference_page_tabs();
-	}
+    $tabs = $sell_media_tabs;
 
     $links = array();
     $i = 0;
@@ -89,13 +79,25 @@ function sell_media_get_page_tab_markup() {
 		if( isset( $tab['title'] ) )
 			$tabtitle = $tab['title'];
         if ( $tabname == $current ) {
-            $links[] = "<a class='nav-tab nav-tab-active' href='?page=$page&tab=$tabname&i=$i'>$tabtitle</a>";
+            $links[] = "<a class='nav-tab nav-tab-active' href='?post_type=sell_media_item&page=$page&tab=$tabname&i=$i'>$tabtitle</a>";
         } else {
-            $links[] = "<a class='nav-tab' href='?page=$page&tab=$tabname&i=$i'>$tabtitle</a>";
+            $links[] = "<a class='nav-tab' href='?post_type=sell_media_item&page=$page&tab=$tabname&i=$i'>$tabtitle</a>";
         }
         $i++;
     }
-    sell_media_utility_links();
+
+
+    $plugin_data = get_plugin_data(  plugin_dir_path( dirname( dirname( __FILE__ ) ) ) . 'sell-media.php', $markup = true, $translate = true );
+
+    echo '<div class="theme-options">';
+    echo '<ul>';
+    echo '<li><a href="' . $plugin_data['PluginURI'] . '" target="_blank">' . $plugin_data['Name'] . '</a></li>';
+    echo '<li>' . __( 'Version: ', 'gpp' ) . $plugin_data['Version'] . '</li>';
+    echo '<li><a href="' . $plugin_data['AuthorURI'] . '" target="_blank">' . __( 'Support', 'gpp' ) . '</a></li>';
+    echo '</ul>';
+    echo '<br class="clear">';
+    echo '</div>';
+
     echo '<div id="icon-themes" class="icon32"><br /></div>';
     echo '<h2 class="nav-tab-wrapper">';
     foreach ( $links as $link )
