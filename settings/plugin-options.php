@@ -20,19 +20,6 @@ $general_settings_tab = array(
 
 sell_media_register_theme_option_tab( $general_settings_tab );
 
-$colors_tab = array(
-    "name" => "colors_tab",
-    "title" => __( "Colors", "gpp" ),
-    "sections" => array(
-        "colors_section_1" => array(
-            "name" => "colors_section_1",
-            "title" => __( "Colors", "gpp" ),
-            "description" => __( "", "gpp" )
-        )
-    )
-);
-
-sell_media_register_theme_option_tab( $colors_tab );
 
 $slideshow_tab = array(
     "name" => "slideshow_tab",
@@ -52,83 +39,26 @@ sell_media_register_theme_option_tab( $slideshow_tab );
  * The following example shows you how to register theme options and assign them to tabs and sections:
 */
 $options = array(
-    'logo' => array(
+    'test-mode' => array(
         "tab" => "general_tab",
-        "name" => "logo",
-        "title" => __( "Logo", "gpp" ),
-        "description" => __( "Use a transparent png or jpg image", "gpp" ),
+        "name" => "test-mode",
+        "title" => __( "Test Mode", "gpp" ),
+        "description" => __( sprintf( 'To accept real payments, select No. To fully use test mode, you must have %s.', '<a href="https://developer.paypal.com/" target="_blank">Paypal sandbox (test) account</a>' ), 'sell_media' ),
         "section" => "general_section_1",
         "since" => "1.0",
         "id" => "general_section_1",
-        "type" => "image",
-        "default" => ""
-    ),
-    'favicon' => array(
-        "tab" => "general_tab",
-        "name" => "favicon",
-        "title" => __( "Favicon", "gpp" ),
-        "description" => __( "Use a transparent png or ico image", "gpp" ),
-        "section" => "general_section_1",
-        "since" => "1.0",
-        "id" => "general_section_1",
-        "type" => "image",
-        "default" => ""
-    ),
-	'categories' => array(
-        "tab" => "general_tab",
-        "name" => "categories",
-        "title" => __( "Blog Category", "gpp" ),
-        "description" => __( 'Select your blog category', "gpp" ),
-        "section" => "general_section_1",
-        "since" => "1.0",
-        "id" => "general_section_1",
-        "type" => "checkbox",
-		"default" => array("uncategorized"),
-		"valid_options" => sell_media_get_taxonomy_list()
-    ),
-    'color' => array(
-        "tab" => "colors_tab",
-        "name" => "color",
-        "title" => __( "Color", "gpp" ),
-        "description" => __( "Select a color palette", "gpp" ),
-        "section" => "colors_section_1",
-        "since" => "1.0",
-        "id" => "colors_section_1",
         "type" => "select",
         "default" => "",
         "valid_options" => array(
-            "light" => array(
-                "name" => "light",
-                "title" => __( "Light", "gpp" )
+            "yes" => array(
+                "name" => "yes",
+                "title" => __( "Yes", "gpp" )
             ),
-            "dark" => array(
-                "name" => "dark",
-                "title" => __( "Dark", "gpp" )
+            "no" => array(
+                "name" => "no",
+                "title" => __( "No", "gpp" )
             )
         )
-    ),
-    "css" => array(
-        "tab" => "colors_tab",
-        "name" => "css",
-        "title" => __( "Custom CSS", "gpp" ),
-        "description" => __( "Add some custom CSS to your theme.", "gpp" ),
-        "section" => "colors_section_1",
-        "since" => "1.0",
-        "id" => "colors_section_1",
-        "type" => "textarea",
-        "sanitize" => "html",
-        "default" => ""
-    ),
-    "slideshow" => array(
-        "tab" => "slideshow_tab",
-        "name" => "slideshow",
-        "title" => __( "Slideshow Images", "gpp" ),
-        "description" => __( "Select or create a gallery of images to use in the homepage slideshow.", "example" ),
-        "section" => "slideshow_section_1",
-        "since" => "1.0",
-        "id" => "slideshow_section_1",
-        "type" => "gallery",
-        "default" => ""
     )
 );
 

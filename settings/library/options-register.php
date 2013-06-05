@@ -277,12 +277,16 @@ foreach ( $sell_media_option_parameters as $option ) {
  */
 function sell_media_setting_callback( $option ) {
 	$sell_media_options = (array) sell_media_get_options();
+	$sell_media_option_parameters = sell_media_get_sell_media_option_parameters();
 
 echo '<pre>';
-print_r($sell_media_options);
+print_r( $option );
+print_r( $sell_media_options );
+$sell_media_option_parameters['test-mode'] = $option;
+print_r( $sell_media_option_parameters );
+
 echo '</pre>';
-return;
-	$sell_media_option_parameters = sell_media_get_sell_media_option_parameters();
+
 	$optionname = $option['name'];
 	$optiontitle = $option['title'];
 	$optiondescription = $option['description'];

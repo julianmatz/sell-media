@@ -238,7 +238,8 @@ function sell_media_get_options() {
     // Globalize the variable that holds the Theme options
     global $sell_media_options;
     // Parse the stored options with the defaults
-    $sell_media_options = (object) wp_parse_args( get_option( sell_media_get_current_theme_id() . '_options', array() ), $option_defaults );
+    $sell_media_options = wp_parse_args( get_option( 'sell_media', array() ), $option_defaults );
+
     // Return the parsed array
     return $sell_media_options;
 }
